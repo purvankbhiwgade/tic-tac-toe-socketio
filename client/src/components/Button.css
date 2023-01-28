@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.btn {
+  width: 328px;
+  height: 56px;
+}
