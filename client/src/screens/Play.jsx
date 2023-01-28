@@ -9,7 +9,6 @@ import Square from "../components/Square";
 import Axios from 'axios'
 import Cookies from "universal-cookie";
 
-
 export default function Play() {
   const [history, setHistory] = useState(Array(9).fill(null));
   const [squares, setSquares] = useState(Array(9).fill(null));
@@ -19,7 +18,6 @@ export default function Play() {
   const [xIsNext, setXIsNext] = useState(true);
   const currentSquares = history[currentMove];
   const { LogOut, socket } = useContext(FormContextProvider);
-
   const cookies = new Cookies();
 
   socket.on("play", (payload) => {
