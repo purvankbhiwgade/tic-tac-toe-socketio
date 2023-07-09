@@ -1,35 +1,46 @@
 import React, { useState } from "react";
 import Cookies from "universal-cookie";
 import FormContextProvider from "./FormContextProvider";
-// import { StreamChat } from "stream-chat";
 import Axios from "axios";
-import io from "socket.io-client"
-
+import io from "socket.io-client";
 
 function FormState(props) {
-  const socket = io.connect("http://localhost:3000", { transports : ['websocket', 'polling', 'flashsocket'] })
+  const socket = io.connect("http://localhost:3000", {
+    transports: ["websocket", "polling", "flashsocket"],
+  });
   const [isAuth, setIsAuth] = useState(false);
   const [channel, setChannel] = useState(null);
-  const [rivalEmail, setRivalEmail] = useState("")
-  const [userEmail, setUserEmail] = useState("")
+  const [rivalEmail, setRivalEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [opponent, setOpponent] = useState("Player");
+  const [secondPlayer, setSecondPlayer] = useState(false);
   const cookies = new Cookies();
-  
-  const handleUserEmail = (event) => {
-    setUserEmail(event.target.value)
-  }
 
-  const handleRivalEmail = (event) => {
-    setRivalEmail(event.target.value)
-  }
-  
+  const handleUserEmail = (value) => {
+    setUserEmail(value);
+  };
+
+  const handleRivalEmail = (value) => {
+    setRivalEmail(value);
+  };
+
   const handleIsAuth = (val) => {
     setIsAuth(val);
   };
 
+  // const handlePiece = (value) => setPiece(value);
+  // const handleXIsNext = (value) => setXIsNext(value);
+  const handleOpponent = (value) => {
+    setOpponent(value);
+  };
+
+  const handleSecondPlayer = (value) => {
+    setSecondPlayer(value);
+  };
 
   const LogOut = () => {
     cookies.remove("userEmail");
-    cookies.remove("rivalEmail")
+    cookies.remove("rivalEmail");
     setIsAuth(false);
   };
 
@@ -63,7 +74,20 @@ function FormState(props) {
 
   return (
     <FormContextProvider.Provider
-      value={{ isAuth, handleIsAuth, socket, rivalEmail, handleRivalEmail, userEmail, handleUserEmail, LogOut }}
+      value={{
+        socket,
+        LogOut,
+        isAuth,
+        handleIsAuth,
+        rivalEmail,
+        handleRivalEmail,
+        userEmail,
+        handleUserEmail,
+        opponent,
+        handleOpponent,
+        secondPlayer,
+        handleSecondPlayer,
+      }}
     >
       {props.children}
     </FormContextProvider.Provider>

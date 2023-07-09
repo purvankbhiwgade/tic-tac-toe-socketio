@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import Cookies from "universal-cookie";
 import Axios from "axios";
 import FormContextProvider from "../context/FormContextProvider";
+import { Auth } from 'aws-amplify';
 
 export default function useLogin() {
   const {isAuth, handleIsAuth} = useContext(FormContextProvider)
@@ -16,23 +17,15 @@ export default function useLogin() {
     return true;
   };
 
-  const handleLogin = (event) => {
+  async function handleLogin(event) {
     event.preventDefault();
-    validateAll();
-    console.log("Axios request");
-    console.log("values", values);
-    Axios.post("http://localhost:3001/login", values).then((res) => {
-      const { token, userId, name, username, email } = res.data;
-      console.log('setting cookies')
-      console.log('res.data',res.data)
-      cookies.set("token", token, { sameSite: "none", secure: true });
-      cookies.set("userId", userId, { sameSite: "none", secure: true });
-      cookies.set("name", name, { sameSite: "none", secure: true });
-      cookies.set("username", username, { sameSite: "none", secure: true });
-      cookies.set("email", email, { sameSite: "none", secure: true });
-      handleIsAuth(true);
-    });
-  };
+    if(!validateAll()) return false;
+    try {
+      const user = await Auth.signIn(values.username, values.password);
+    } catch (error) {
+      console.log('error signing in', error);
+    }
+  }
 
   const handleChange = (event) => {
     const name = event.target.name;

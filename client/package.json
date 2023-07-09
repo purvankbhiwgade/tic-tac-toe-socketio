@@ -9,6 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-amplify/ui-react": "^4.6.4",
+    "@aws-sdk/client-cognito-identity-provider": "^3.350.0",
+    "animejs": "^3.2.1",
+    "aws-amplify": "^5.2.5",
     "axios": "^1.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

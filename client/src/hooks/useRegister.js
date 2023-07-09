@@ -2,9 +2,16 @@ import { useState, useContext } from "react";
 import Axios from "axios";
 import Cookies from "universal-cookie";
 import FormContextProvider from "../context/FormContextProvider";
+import { Auth } from "aws-amplify";
 
 export default function useRegister() {
-  const {isAuth, handleIsAuth} = useContext(FormContextProvider)
+  const { isAuth, handleIsAuth } = useContext(FormContextProvider);
+  const [disabled, setDisabled] = useState(false);
+  const [OTPModal, setOTPModal] = useState(false);
+  const [alert, setAlert] = useState({
+    status: "error",
+    message: "",
+  });
   const cookies = new Cookies();
   const [values, setValues] = useState({
     name: "",
@@ -31,21 +38,73 @@ export default function useRegister() {
     return true;
   };
 
-  const handleSubmit = () => {
-    validateAll();
-    Axios.post("http://localhost:3001/signup", values).then((res) => {
-      const { token, userId, name, username, email, hashedPass } = res.data;
-      cookies.set("token", token, {sameSite: "none", secure: true});
-      cookies.set("userId", userId, {sameSite: "none", secure: true});
-      cookies.set("name", name, {sameSite: "none", secure: true});
-      cookies.set("username", username, {sameSite: "none", secure: true});
-      cookies.set("email", email, {sameSite: "none", secure: true});
-      cookies.set("hashedPass", hashedPass, {sameSite: "none", secure: true});
-      handleIsAuth(true)
-    }).catch((error) => {
-      console.log(error)
-    });
-  };
+  // const handleSubmit = () => {
+  //   validateAll();
+  //   Axios.post("http://localhost:3001/signup", values).then((res) => {
+  //     const { token, userId, name, username, email, hashedPass } = res.data;
+  //     cookies.set("token", token, {sameSite: "none", secure: true});
+  //     cookies.set("userId", userId, {sameSite: "none", secure: true});
+  //     cookies.set("name", name, {sameSite: "none", secure: true});
+  //     cookies.set("username", username, {sameSite: "none", secure: true});
+  //     cookies.set("email", email, {sameSite: "none", secure: true});
+  //     cookies.set("hashedPass", hashedPass, {sameSite: "none", secure: true});
+  //     handleIsAuth(true)
+  //   }).catch((error) => {
+  //     console.log(error)
+  //   });
+  // };
+
+  async function handleSubmit() {
+    const isValid = validateAll();
+
+    if (isValid) {
+      try {
+        setDisabled(true);
+        const { user } = await Auth.signUp({
+          username: values.username,
+          password: values.password,
+          attributes: {
+            email: values.email,
+            "custom:name": values.name,
+          },
+          autoSignIn: {
+            // optional - enables auto sign in after user is confirmed
+            enabled: true,
+          },
+        });
+        if (user && typeof user === "object") {
+          setOTPModal(true);
+          // setAlert({
+          //   status: "success",
+          //   message: "Congratulations!!! Account created.",
+          // });
+          // setAccountCreated(true);
+        }
+      } catch (error) {
+        const regex = /Email already exists/;
+        const match = error.message.match(regex);
+        if(match){
+          setAlert({
+            status: "error",
+            message: "Email already exists!!!"
+          })
+          console.log(values)
+          setValues({
+            ...values,
+            email: ""
+          })
+        }
+        // console.log("error signing up:", error.slice(28));
+      } finally {
+        setDisabled(false);
+      }
+    } else {
+      setAlert({
+        status: "error",
+        message: "All the fields are mandatory",
+      });
+    }
+  }
 
   const handleChange = (event) => {
     const name = event.target.name;
@@ -121,5 +180,13 @@ export default function useRegister() {
     }
   };
 
-  return [values, errors, handleChange, handleSubmit];
+  const handleAlert = () => {
+    const timeout = setTimeout(() => {
+      console.log("I am handling alert");
+      setAlert({ status: "", message: "" });
+    }, 3000); // Set the timeout duration in milliseconds (e.g., 5000ms = 5 seconds)
+    return timeout;
+  };
+
+  return [values, errors, handleChange, handleSubmit, alert, handleAlert, disabled, OTPModal];
 }
