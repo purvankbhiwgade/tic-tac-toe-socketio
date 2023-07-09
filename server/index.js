@@ -92,13 +92,13 @@ io.on("connection", (socket) => {
     try {
       if (socket.adapter.rooms.has(roomname)) {
         // Emit the "play" event to the room
-        // socket.to(roomname).emit("play_game", { squares, X, statement: "emitter to other" });
         // io.emit("play", { squares, X, statement: "emitter to itself" });
         // Check if the event was successfully emitted
         const room = socket.adapter.rooms.get(roomname);
         const numClients = room ? room.size : 0;
         console.log(numClients)
         if (numClients > 1) {
+          socket.to(roomname).emit("play_game", { squares, X, statement: "emitter to other" });
           console.log(
             `"play" event emitted to room "${roomname}" successfully.`
           );
